@@ -1,0 +1,7 @@
+[sobremesa]
+name=Sobremesa Custom Builds
+baseurl=https://dnf-repo.iram.es/sobremesa/f$releasever
+skip_if_unavailable=1
+repo_gpgcheck=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/sobremesa.gpg

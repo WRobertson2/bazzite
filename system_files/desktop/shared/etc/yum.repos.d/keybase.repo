@@ -1,0 +1,7 @@
+[keybase]
+name=keybase
+baseurl=http://prerelease.keybase.io/rpm/x86_64
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/keybase.gpg
+metadata_expire=6h

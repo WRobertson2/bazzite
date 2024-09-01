@@ -58,7 +58,7 @@ jobs:
       fail-fast: false
       matrix:
         base_image_flavor: [main]
-        base_name: [bazzite, bazzite-deck, bazzite-nvidia]
+        base_name: [bazzite]
         base_image_name: [kinoite, silverblue]
         target_image_flavor: [main, asus]
         fedora_version: [40]
@@ -66,8 +66,7 @@ jobs:
           - fedora_version: 40
             is_latest_version: true
             is_stable_version: true
-            kernel_flavor: fsync-ba # must match a kernel_flavor from akmods repo
-            kernel_version: 6.9.12-205.fsync.fc40.x86_64 # must match a cached version of the above flavor
+            kernel_flavor: main  # must match a kernel_flavor from akmods repo
     steps:
       - name: Define env.IMAGE_FLAVOR
         run: |
@@ -117,13 +116,6 @@ jobs:
         uses: EyeCantCU/cosign-action/verify@v0.3.0
         with:
           containers: akmods:${{ matrix.kernel_flavor}}-${{ matrix.fedora_version }}-${{ matrix.kernel_version }}
-          pubkey: https://raw.githubusercontent.com/ublue-os/akmods/main/cosign.pub
-          registry: ${{ env.IMAGE_REGISTRY }}
-
-      - name: Verify akmods-nvidia image
-        uses: EyeCantCU/cosign-action/verify@v0.3.0
-        with:
-          containers: akmods-nvidia:${{ matrix.kernel_flavor}}-${{ matrix.fedora_version }}-${{ matrix.kernel_version }}
           pubkey: https://raw.githubusercontent.com/ublue-os/akmods/main/cosign.pub
           registry: ${{ env.IMAGE_REGISTRY }}
 
