@@ -113,12 +113,13 @@ jobs:
           pubkey: https://raw.githubusercontent.com/ublue-os/${{ matrix.base_image_flavor }}/main/cosign.pub
           registry: ${{ env.UPSTREAM_REGISTRY }}
 
-      - name: Verify akmods image
-        uses: EyeCantCU/cosign-action/verify@v0.3.0
-        with:
-          containers: akmods:${{ matrix.kernel_flavor}}-${{ matrix.fedora_version }}-${{ matrix.kernel_version }}
-          pubkey: https://raw.githubusercontent.com/ublue-os/akmods/main/cosign.pub
-          registry: ${{ env.UPSTREAM_REGISTRY }}
+      ## This is not needed since we're not currently building with fsync or akmods
+      # - name: Verify akmods image
+      #   uses: EyeCantCU/cosign-action/verify@v0.3.0
+      #   with:
+      #     containers: akmods:${{ matrix.kernel_flavor}}-${{ matrix.fedora_version }}-${{ matrix.kernel_version }}
+      #     pubkey: https://raw.githubusercontent.com/ublue-os/akmods/main/cosign.pub
+      #     registry: ${{ env.UPSTREAM_REGISTRY }}
 
       # Checkout push-to-registry action GitHub repository
       - name: Checkout Push to Registry action
