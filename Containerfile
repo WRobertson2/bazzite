@@ -1,8 +1,8 @@
 ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-kinoite}"
 ARG BASE_IMAGE_FLAVOR="${BASE_IMAGE_FLAVOR:-main}"
 ARG IMAGE_FLAVOR="${IMAGE_FLAVOR:-main}"
-ARG KERNEL_FLAVOR="${KERNEL_FLAVOR:-main}"
-ARG KERNEL_VERSION="${KERNEL_VERSION:-6.10.6-200.fc40.x86_64}"
+ARG KERNEL_FLAVOR="${KERNEL_FLAVOR:-fsync}"
+ARG KERNEL_VERSION="${KERNEL_VERSION:-6.10.4-201.fsync.fc40.x86_64}"
 ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
 ARG SOURCE_IMAGE="${SOURCE_IMAGE:-$BASE_IMAGE_NAME-$BASE_IMAGE_FLAVOR}"
 ARG BASE_IMAGE="ghcr.io/ublue-os/${SOURCE_IMAGE}"
@@ -21,8 +21,8 @@ FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION} AS bazzite
 ARG IMAGE_NAME="${IMAGE_NAME:-bazzite}"
 ARG IMAGE_VENDOR="${IMAGE_VENDOR:-ublue-os}"
 ARG IMAGE_FLAVOR="${IMAGE_FLAVOR:-main}"
-ARG KERNEL_FLAVOR="${KERNEL_FLAVOR:-main}"
-ARG KERNEL_VERSION="${KERNEL_VERSION:-6.10.6-200.fc40.x86_64}"
+ARG KERNEL_FLAVOR="${KERNEL_FLAVOR:-fsync}"
+ARG KERNEL_VERSION="${KERNEL_VERSION:-6.10.4-201.fsync.fc40.x86_64}"
 ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
 ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-kinoite}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
@@ -237,11 +237,11 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     --mount=type=bind,from=akmods-extra,src=/rpms,dst=/tmp/akmods-extra-rpms \
     sed -i 's@enabled=0@enabled=1@g' /etc/yum.repos.d/_copr_ublue-os-akmods.repo && \
     ## Not working with mainline kernels for some weird rpm-ostree conflict
-    # rpm-ostree install \
-    #         /tmp/akmods-rpms/kmods/*v4l2loopback*.rpm \
-    #         /tmp/akmods-rpms/kmods/*framework-laptop*.rpm && \
-    #         /tmp/akmods-extra-rpms/kmods/*zenergy*.rpm \
-    #         /tmp/akmods-extra-rpms/kmods/*ryzen-smu*.rpm && \
+    rpm-ostree install \
+            /tmp/akmods-rpms/kmods/*v4l2loopback*.rpm \
+            /tmp/akmods-rpms/kmods/*framework-laptop*.rpm && \
+            /tmp/akmods-extra-rpms/kmods/*zenergy*.rpm \
+            /tmp/akmods-extra-rpms/kmods/*ryzen-smu*.rpm && \
     sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/negativo17-fedora-multimedia.repo && \
     rpm-ostree override replace \
         --experimental \

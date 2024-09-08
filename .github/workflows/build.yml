@@ -114,12 +114,12 @@ jobs:
           registry: ${{ env.UPSTREAM_REGISTRY }}
 
       ## This is not needed since we're not currently building with fsync or akmods
-      # - name: Verify akmods image
-      #   uses: EyeCantCU/cosign-action/verify@v0.3.0
-      #   with:
-      #     containers: akmods:${{ matrix.kernel_flavor}}-${{ matrix.fedora_version }}-${{ matrix.kernel_version }}
-      #     pubkey: https://raw.githubusercontent.com/ublue-os/akmods/main/cosign.pub
-      #     registry: ${{ env.UPSTREAM_REGISTRY }}
+      - name: Verify akmods image
+        uses: EyeCantCU/cosign-action/verify@v0.3.0
+        with:
+          containers: akmods:${{ matrix.kernel_flavor}}-${{ matrix.fedora_version }}-${{ matrix.kernel_version }}
+          pubkey: https://raw.githubusercontent.com/ublue-os/akmods/main/cosign.pub
+          registry: ${{ env.UPSTREAM_REGISTRY }}
 
       # Checkout push-to-registry action GitHub repository
       - name: Checkout Push to Registry action
@@ -346,23 +346,23 @@ jobs:
           podman tag $IMAGE rechunked-img
 
       # - name: Check Secureboot
-      #   shell: bash
-      #   run: |
-      #     set -x
-      #     if [[ ! $(command -v sbverify) || ! $(command -v curl) || ! $(command -v openssl) ]]; then
-      #       sudo apt update
-      #       sudo apt install sbsigntool curl openssl
-      #     fi
-      #     TMP=$(podman create rechunked-img bash)
-      #     podman cp $TMP:/usr/lib/modules/${{ matrix.kernel_version }}/vmlinuz .
-      #     podman rm $TMP
-      #     sbverify --list vmlinuz
-      #     curl --retry 3 -Lo kernel-sign.der https://github.com/ublue-os/kernel-cache/raw/main/certs/public_key.der
-      #     curl --retry 3 -Lo akmods.der https://github.com/ublue-os/kernel-cache/raw/main/certs/public_key_2.der
-      #     openssl x509 -in kernel-sign.der -out kernel-sign.crt
-      #     openssl x509 -in akmods.der -out akmods.crt
-      #     sbverify --cert kernel-sign.crt vmlinuz || exit 1
-      #     sbverify --cert akmods.crt vmlinuz || exit 1
+        shell: bash
+        run: |
+          set -x
+          if [[ ! $(command -v sbverify) || ! $(command -v curl) || ! $(command -v openssl) ]]; then
+            sudo apt update
+            sudo apt install sbsigntool curl openssl
+          fi
+          TMP=$(podman create rechunked-img bash)
+          podman cp $TMP:/usr/lib/modules/${{ matrix.kernel_version }}/vmlinuz .
+          podman rm $TMP
+          sbverify --list vmlinuz
+          curl --retry 3 -Lo kernel-sign.der https://github.com/ublue-os/kernel-cache/raw/main/certs/public_key.der
+          curl --retry 3 -Lo akmods.der https://github.com/ublue-os/kernel-cache/raw/main/certs/public_key_2.der
+          openssl x509 -in kernel-sign.der -out kernel-sign.crt
+          openssl x509 -in akmods.der -out akmods.crt
+          sbverify --cert kernel-sign.crt vmlinuz || exit 1
+          sbverify --cert akmods.crt vmlinuz || exit 1
 
       # Workaround bug where capital letters in your GitHub username make it impossible to push to GHCR.
       # https://github.com/macbre/push-to-ghcr/issues/12
