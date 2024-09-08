@@ -345,7 +345,7 @@ jobs:
           # keep for secureboot check
           podman tag $IMAGE rechunked-img
 
-      # - name: Check Secureboot
+      - name: Check Secureboot
         shell: bash
         run: |
           set -x
