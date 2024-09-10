@@ -367,7 +367,7 @@ RUN rpm-ostree install \
         fastfetch \
         glow \
         gum \
-        vim \
+        vim-enhanced \
         cockpit-networkmanager \
         cockpit-podman \
         cockpit-selinux \
