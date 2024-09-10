@@ -158,7 +158,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         || true && \
     if grep -q "kinoite" <<< "${BASE_IMAGE_NAME}"; then\
         rpm-ostree override replace \
-        --experimental
+        --experimental \
         --from repo=updates \
             qt6-qtbase \
             qt6-qtbase-common \
