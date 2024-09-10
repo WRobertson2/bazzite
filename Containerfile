@@ -161,7 +161,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     --from repo=updates \
         libv4l \
         || true && \
-#    if grep -q "kinoite" <<< "${BASE_IMAGE_NAME}"; then \
+    if grep -q "kinoite" <<< "${BASE_IMAGE_NAME}"; then \
         rpm-ostree override replace \
         --experimental \
         --from repo=updates \
@@ -170,7 +170,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
             qt6-qtbase-mysql \
             qt6-qtbase-gui \
             || true && \
-#    ; fi && \
+    ; fi && \
     rpm-ostree override remove \
         glibc32 \
         || true && \
