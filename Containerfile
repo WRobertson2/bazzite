@@ -164,8 +164,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
             qt6-qtbase-common \
             qt6-qtbase-mysql \
             qt6-qtbase-gui \
-            || true \
-    ; fi && \
+            || true; fi && \
     rpm-ostree override remove \
         glibc32 \
         || true && \
