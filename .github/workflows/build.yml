@@ -396,7 +396,7 @@ jobs:
         if: github.event_name != 'pull_request'
         with:
           containers: ${{ env.IMAGE_NAME }}
-          registry: ${{ IMAGE_REGISTRY }}
+          registry: ${{ env.IMAGE_REGISTRY }}
           registry-token: ${{ secrets.GITHUB_TOKEN }}
           signing-secret: ${{ secrets.SIGNING_SECRET }}
           tags: ${{ steps.push.outputs.outputs && fromJSON(steps.push.outputs.outputs).digest }}
