@@ -74,9 +74,9 @@ jobs:
         run: |
           if [[ "${{ matrix.base_name }}" == "bazzite-nvidia" ]]; then
               if [[ "${{ matrix.target_image_flavor }}" == "main" ]]; then
-                  echo "IMAGE_FLAVOR=nvidia" >> $GITHUB_ENV
+                  echo "IMAGE_FLAVOR=${{ matrix.target_nvidia_flavor }}" >> $GITHUB_ENV
               else
-                  echo "IMAGE_FLAVOR=${{ format('{0}-{1}', matrix.target_image_flavor, 'nvidia') }}" >> $GITHUB_ENV
+                 echo "IMAGE_FLAVOR=${{ format('{0}-{1}', matrix.target_image_flavor, matrix.target_nvidia_flavor) }}" >> $GITHUB_ENV
               fi
           else
               echo "IMAGE_FLAVOR=${{ matrix.target_image_flavor }}" >> $GITHUB_ENV
@@ -114,7 +114,6 @@ jobs:
           pubkey: https://raw.githubusercontent.com/ublue-os/${{ matrix.base_image_flavor }}/main/cosign.pub
           registry: ${{ env.UPSTREAM_REGISTRY }}
 
-      ## This is not needed since we're not currently building with fsync or akmods
       - name: Verify akmods image
         uses: EyeCantCU/cosign-action/verify@v0.3.0
         with:
@@ -122,12 +121,23 @@ jobs:
           pubkey: https://raw.githubusercontent.com/ublue-os/akmods/main/cosign.pub
           registry: ${{ env.UPSTREAM_REGISTRY }}
 
+      # - name: Verify akmods-nvidia image
+      #   uses: EyeCantCU/cosign-action/verify@v0.3.0
+      #   with:
+      #     containers: akmods-${{ matrix.target_nvidia_flavor }}:${{ matrix.kernel_flavor}}-${{ matrix.fedora_version }}-${{ matrix.kernel_version }}
+      #     pubkey: https://raw.githubusercontent.com/ublue-os/akmods/main/cosign.pub
+      #     registry: ${{ env.IMAGE_REGISTRY }}
+
       # Checkout push-to-registry action GitHub repository
       - name: Checkout Push to Registry action
         uses: actions/checkout@v4
 
       # Prepare offline documentation
       # - run: mkdir -p ${{ github.workspace }}/system_files/desktop/shared/usr/share/ublue-os/docs/html
+      #   continue-on-error: true
+      # - name: Checkout docs repo
+      #   run: rm -r ${{ github.workspace }}/docs && git clone https://github.com/KyleGospo/docs.bazzite.gg.git ${{ github.workspace }}/docs
+      #   continue-on-error: true
       # - name: Build offline documentation
       #   uses: ./.github/workflows/build_mkdocs
       #   continue-on-error: true

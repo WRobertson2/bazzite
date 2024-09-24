@@ -33,8 +33,8 @@ install-deckhd-bios:
     #!/usr/bin/bash
     SYS_ID="$(/usr/libexec/hwsupport/sysid)"
     if [[ ":Jupiter:" =~ ":$SYS_ID:" ]]; then
-      RESOLUTION=$(sudo lshw -json -c display | jq -r .[]."configuration"."resolution")
-      if [[ "${RESOLUTION}" = "1200,1920" ]]; then
+      RESOLUTION=$(xrandr --display :0 | grep '*' | uniq | awk '{print $1}')
+      if [[ "${RESOLUTION}" = "1920x1200" ]]; then
         sudo systemctl mask --now jupiter-biosupdate.service
         wget -q https://deckhd.com/downloads/install.sh -O /tmp/deckhd-install.sh
         chmod +x /tmp/deckhd-install.sh
@@ -51,8 +51,8 @@ enable-deck-bios-firmware-updates:
     #!/usr/bin/bash
     SYS_ID="$(/usr/libexec/hwsupport/sysid)"
     if [[ ":Jupiter:" =~ ":$SYS_ID:" || ":Galileo:" =~ ":$SYS_ID:" ]]; then
-      RESOLUTION=$(sudo lshw -json -c display | jq -r .[]."configuration"."resolution")
-      if [[ "${RESOLUTION}" = "1200,1920" ]]; then
+      RESOLUTION=$(xrandr --display :0 | grep '*' | uniq | awk '{print $1}')
+      if [[ "${RESOLUTION}" = "1920x1200" ]]; then
         echo "DeckHD detected. Firmware updates enabled. BIOS updates not enabled."
       elif [[ "$(awk '/MemTotal/{print $(NF-1)}' /proc/meminfo)" == "31664740" ]]; then
         echo "32GB RAM modded Deck detected. Firmware updates enabled. BIOS updates not enabled."
@@ -78,6 +78,23 @@ disable-firmware-updates:
 disable-sdgyrodsu:
     #!/usr/bin/bash
     sudo systemctl mask --user sdgyrodsu.service
+
+# runs ryzenadj --max-performance on AC power
+enable-ryzenadj-max-performance:
+    #/bin/bash
+    # credit to adolforegosa on discord for the original fix
+    echo 'this fix sets ryzenadj --max-performance whenever AC status changes to battery from plugged-in'
+    echo 'SUBSYSTEM=="power_supply", ATTR{online}=="0", RUN+="/usr/bin/ryzenadj --max-performance"' | sudo tee "/etc/udev/rules.d/99-ryzenadj-power-source-change.rules" > /dev/null
+
+    sudo udevadm control --reload-rules
+    echo 'installation complete. Reboot to take effect'
+
+# disables ryzenadj --max-performance on AC power
+disable-ryzenadj-max-performance:
+    #/bin/bash
+    sudo rm /etc/udev/rules.d/99-ryzenadj-power-source-change.rules
+    sudo udevadm control --reload-rules
+    echo 'removal complete'
 
 # Re-enable input remapper feature on non-desktop images
 restore-input-remapper:
