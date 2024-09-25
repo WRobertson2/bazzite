@@ -369,6 +369,8 @@ RUN rpm-ostree install \
         age \
         minisign \
         yubico-piv-tool \
+        nvme-cli \
+        hdparm \
         tor \
         bcachefs-tools \
         pcsc-lite-devel \
