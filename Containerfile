@@ -287,7 +287,6 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     sed -i 's@enabled=0@enabled=1@g' /etc/yum.repos.d/_copr_ublue-os-akmods.repo && \
     ## Not working with mainline kernels for some weird rpm-ostree conflict
     rpm-ostree install \
-        /tmp/akmods-rpms/kmods/*v4l2loopback*.rpm \
         /tmp/akmods-extra-rpms/kmods/*zenergy*.rpm \
         /tmp/akmods-extra-rpms/kmods/*ryzen-smu*.rpm && \
     sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/negativo17-fedora-multimedia.repo && \
