@@ -206,6 +206,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     curl -Lo /etc/yum.repos.d/_copr_rok-cdemu.repo https://copr.fedorainfracloud.org/coprs/rok/cdemu/repo/fedora-"${FEDORA_MAJOR_VERSION}"/rok-cdemu-fedora-"${FEDORA_MAJOR_VERSION}".rep && \
     curl -Lo /etc/yum.repos.d/_copr_rodoma92-kde-cdemu-manager.repo https://copr.fedorainfracloud.org/coprs/rodoma92/kde-cdemu-manager/repo/fedora-"${FEDORA_MAJOR_VERSION}"/rodoma92-kde-cdemu-manager-fedora-"${FEDORA_MAJOR_VERSION}".repo && \
     curl -Lo /etc/yum.repos.d/_copr_rodoma92-rmlint.repo https://copr.fedorainfracloud.org/coprs/rodoma92/rmlint/repo/fedora-"${FEDORA_MAJOR_VERSION}"/rodoma92-rmlint-fedora-"${FEDORA_MAJOR_VERSION}".repo && \
+    /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
 # Install kernel-fsync
@@ -283,15 +284,16 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
 RUN rpm-ostree override replace \
     --experimental \
     --from repo=sobremesa \
-    mesa-filesystem \
-    mesa-va-drivers \
-    mesa-libxatracker \
-    mesa-libglapi \
-    mesa-dri-drivers \
-    mesa-libgbm \
-    mesa-libEGL \
-    mesa-vulkan-drivers \
-    mesa-libGL && \
+        mesa-filesystem \
+        mesa-va-drivers \
+        mesa-libxatracker \
+        mesa-libglapi \
+        mesa-dri-drivers \
+        mesa-libgbm \
+        mesa-libEGL \
+        mesa-vulkan-drivers \
+        mesa-libGL && \
+    /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
 # Install Valve's patched Mesa, Pipewire, Bluez, and Xwayland
@@ -331,6 +333,7 @@ RUN    rpm-ostree override replace \
         libaacs \
         libbdplus \
         libbluray && \
+    /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
 # Remove unneeded packages
