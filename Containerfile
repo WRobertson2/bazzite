@@ -327,12 +327,14 @@ RUN    rpm-ostree override replace \
         bluez-cups \
         bluez-libs \
         xorg-x11-server-Xwayland && \
+    sed -i 's@enabled=0@enabled=1@g' /etc/yum.repos.d/rpmfusion-*.repo && \
     rpm-ostree install \
         # mesa-va-drivers-freeworld \
         # mesa-vdpau-drivers-freeworld.x86_64 \
         libaacs \
         libbdplus \
         libbluray && \
+    sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/rpmfusion-*.repo && \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
