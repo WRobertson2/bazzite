@@ -284,6 +284,7 @@ RUN rpm-ostree override replace \
     --experimental \
     --from repo=sobremesa \
     mesa-filesystem \
+    mesa-va-drivers \
     mesa-libxatracker \
     mesa-libglapi \
     mesa-dri-drivers \
