@@ -1,18 +1,18 @@
 ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-kinoite}"
 ARG BASE_IMAGE_FLAVOR="${BASE_IMAGE_FLAVOR:-main}"
 ARG IMAGE_FLAVOR="${IMAGE_FLAVOR:-main}"
-ARG KERNEL_FLAVOR="${KERNEL_FLAVOR:-fsync}"
-ARG KERNEL_VERSION="${KERNEL_VERSION:-6.10.8-201.fsync.fc40.x86_64}"
+ARG KERNEL_FLAVOR="${KERNEL_FLAVOR:-bazzite}"
+ARG KERNEL_VERSION="${KERNEL_VERSION:-6.11.4-301.bazzite.fc41.x86_64}"
 ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
 ARG SOURCE_IMAGE="${SOURCE_IMAGE:-$BASE_IMAGE_NAME-$BASE_IMAGE_FLAVOR}"
 ARG BASE_IMAGE="ghcr.io/ublue-os/${SOURCE_IMAGE}"
-ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
+ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-41}"
 ARG JUPITER_FIRMWARE_VERSION="${JUPITER_FIRMWARE_VERSION:-jupiter-20240917.1}"
 ARG SHA_HEAD_SHORT="${SHA_HEAD_SHORT}"
 ARG VERSION_TAG="${VERSION_TAG}"
 ARG VERSION_PRETTY="${VERSION_PRETTY}"
 
-FROM ghcr.io/ublue-os/${KERNEL_FLAVOR}-kernel:${FEDORA_MAJOR_VERSION}-${KERNEL_VERSION} AS fsync
+FROM ghcr.io/ublue-os/${KERNEL_FLAVOR}-kernel:${FEDORA_MAJOR_VERSION}-${KERNEL_VERSION} AS bazzite
 FROM ghcr.io/ublue-os/akmods:${KERNEL_FLAVOR}-${FEDORA_MAJOR_VERSION}-${KERNEL_VERSION} AS akmods
 FROM ghcr.io/ublue-os/akmods-extra:${KERNEL_FLAVOR}-${FEDORA_MAJOR_VERSION}-${KERNEL_VERSION} AS akmods-extra
 
@@ -21,8 +21,8 @@ FROM ${BASE_IMAGE}:${FEDORA_MAJOR_VERSION} AS bazzite
 ARG IMAGE_NAME="${IMAGE_NAME:-bazzite}"
 ARG IMAGE_VENDOR="${IMAGE_VENDOR:-ublue-os}"
 ARG IMAGE_FLAVOR="${IMAGE_FLAVOR:-main}"
-ARG KERNEL_FLAVOR="${KERNEL_FLAVOR:-fsync}"
-ARG KERNEL_VERSION="${KERNEL_VERSION:-6.10.8-201.fsync.fc40.x86_64}"
+ARG KERNEL_FLAVOR="${KERNEL_FLAVOR:-bazzite}"
+ARG KERNEL_VERSION="${KERNEL_VERSION:-6.11.4-301.bazzite.fc41.x86_64}"
 ARG IMAGE_BRANCH="${IMAGE_BRANCH:-main}"
 ARG BASE_IMAGE_NAME="${BASE_IMAGE_NAME:-kinoite}"
 ARG FEDORA_MAJOR_VERSION="${FEDORA_MAJOR_VERSION:-40}"
@@ -66,6 +66,7 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
         nss \
         nss-softokn \
         nss-softokn-freebl \
+        nss-sysinit \
         nss-util \
         || true && \
     rpm-ostree override replace \
@@ -173,6 +174,12 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     --from repo=updates \
         libv4l \
         || true && \
+    rpm-ostree override replace \
+    --experimental \
+    --from repo=updates \
+        elfutils-libelf \
+        elfutils-libs \
+        || true && \
     if grep -q "kinoite" <<< "${BASE_IMAGE_NAME}"; then \
         rpm-ostree override replace \
         --experimental \
@@ -191,8 +198,6 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
 
 # Setup Copr repos
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    curl -Lo /usr/bin/copr https://raw.githubusercontent.com/ublue-os/COPR-command/main/copr && \
-    chmod +x /usr/bin/copr && \
     curl -Lo /etc/yum.repos.d/_copr_kylegospo-bazzite.repo https://copr.fedorainfracloud.org/coprs/kylegospo/bazzite/repo/fedora-"${FEDORA_MAJOR_VERSION}"/kylegospo-bazzite-fedora-"${FEDORA_MAJOR_VERSION}".repo && \
     curl -Lo /etc/yum.repos.d/_copr_kylegospo-bazzite-multilib.repo https://copr.fedorainfracloud.org/coprs/kylegospo/bazzite-multilib/repo/fedora-"${FEDORA_MAJOR_VERSION}"/kylegospo-bazzite-multilib-fedora-"${FEDORA_MAJOR_VERSION}".repo?arch=x86_64 && \
     curl -Lo /etc/yum.repos.d/_copr_ublue-os-staging.repo https://copr.fedorainfracloud.org/coprs/ublue-os/staging/repo/fedora-"${FEDORA_MAJOR_VERSION}"/ublue-os-staging-fedora-"${FEDORA_MAJOR_VERSION}".repo?arch=x86_64 && \
@@ -214,21 +219,18 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     /usr/libexec/containerbuild/cleanup.sh && \
     ostree container commit
 
-# Install kernel-fsync
+
+# Install kernel
 RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
-    --mount=type=bind,from=fsync,src=/tmp/rpms,dst=/tmp/fsync-rpms \
+    --mount=type=bind,from=kernel,src=/tmp/rpms,dst=/tmp/kernel-rpms \
     rpm-ostree cliwrap install-to-root / && \
-    if [[ "${KERNEL_FLAVOR}" =~ "fsync" ]]; then \
-        echo "Will install ${KERNEL_FLAVOR} kernel" && \
-        rpm-ostree override replace \
-        --experimental \
-            /tmp/fsync-rpms/kernel-[0-9]*.rpm \
-            /tmp/fsync-rpms/kernel-core-*.rpm \
-            /tmp/fsync-rpms/kernel-modules-*.rpm \
-            /tmp/fsync-rpms/kernel-uki-virt-*.rpm \
-    ; else \
-        echo "will use kernel from ${KERNEL_FLAVOR} images" \
-    ; fi && \
+    echo "Will install ${KERNEL_FLAVOR} kernel" && \
+    rpm-ostree override replace \
+    --experimental \
+        /tmp/kernel-rpms/kernel-[0-9]*.rpm \
+        /tmp/kernel-rpms/kernel-core-*.rpm \
+        /tmp/kernel-rpms/kernel-modules-*.rpm \
+        /tmp/kernel-rpms/kernel-uki-virt-*.rpm && \
     rpm-ostree install \
         scx-scheds && \
     /usr/libexec/containerbuild/cleanup.sh && \
@@ -271,7 +273,9 @@ RUN --mount=type=cache,dst=/var/cache/rpm-ostree \
     --mount=type=bind,from=akmods-extra,src=/rpms,dst=/tmp/akmods-extra-rpms \
     sed -i 's@enabled=0@enabled=1@g' /etc/yum.repos.d/_copr_ublue-os-akmods.repo && \
     rpm-ostree install \
+        /tmp/akmods-rpms/kmods/*kvmfr*.rpm \
         /tmp/akmods-extra-rpms/kmods/*zenergy*.rpm \
+        /tmp/akmods-rpms/kmods/*framework-laptop*.rpm \
         /tmp/akmods-extra-rpms/kmods/*ryzen-smu*.rpm && \
     sed -i 's@enabled=1@enabled=0@g' /etc/yum.repos.d/negativo17-fedora-multimedia.repo && \
     rpm-ostree override replace \
@@ -406,7 +410,8 @@ RUN rpm-ostree install \
         cockpit-navigator \
         cockpit-storaged \
         topgrade \
-        ydotool && \
+        ydotool \
+        btrfs-assistant \
         zstd && \
     rpm-ostree install \
         ublue-update && \
@@ -416,6 +421,7 @@ RUN rpm-ostree install \
     sed -i 's/max_cpu_load_percent.*/max_cpu_load_percent = 100.0/' /etc/ublue-update/ublue-update.toml && \
     sed -i 's/max_mem_percent.*/max_mem_percent = 90.0/' /etc/ublue-update/ublue-update.toml && \
     sed -i 's/dbus_notify.*/dbus_notify = false/' /etc/ublue-update/ublue-update.toml && \
+    sed -i 's/ --xdg-runtime=\\"${XDG_RUNTIME_DIR}\\"//g' /usr/bin/btrfs-assistant-launcher && \
     curl -Lo /usr/bin/installcab https://raw.githubusercontent.com/KyleGospo/steam-proton-mf-wmv/master/installcab.py && \
     chmod +x /usr/bin/installcab && \
     curl -Lo /usr/bin/install-mf-wmv https://github.com/KyleGospo/steam-proton-mf-wmv/blob/master/install-mf-wmv.sh && \
@@ -599,4 +605,6 @@ RUN rm -f /etc/profile.d/toolbox.sh && \
     /usr/libexec/containerbuild/image-info && \
     /usr/libexec/containerbuild/build-initramfs && \
     /usr/libexec/containerbuild/cleanup.sh && \
+    mkdir -p /var/tmp && \
+    chmod 1777 /var/tmp && \
     ostree container commit
