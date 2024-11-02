@@ -62,7 +62,7 @@ jobs:
         base_name: [bazzite]
         base_image_name: [kinoite, silverblue]
         target_image_flavor: [main]
-        fedora_version: [40]
+        fedora_version: [41]
         include:
           - fedora_version: 41
             is_latest_version: true
